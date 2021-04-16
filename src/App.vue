@@ -21,7 +21,8 @@ export default {
       pageNum: 0,
       perPage: 100,
       remainingReposNum: 0,
-      numReserved: false
+      numReserved: false,
+      remainderPg: this.remainingReposNum % this.perPage 
     }
   },
   components: {
@@ -40,7 +41,7 @@ export default {
       const octokit = new Octokit();
       const res = await octokit.request( 'GET /search/repositories', {
         headers: {
-          accept: 'application/vnd.github.v3+json'
+          accept: 'application/vnd.github.v3+json',
         },
         q: `created: > ${ today }`,
         sort: 'stars',
@@ -52,8 +53,12 @@ export default {
       // Push the result into the repos array.
       repos.push( res.data.items );
 
+      if( !this.numReserved ) {
+        this.remainingReposNum = res.data.total_count;
+      }
+
       // Load more properties if exists (Github API pagination).
-      if( this.remainingReposNum % this.perPage > 0 ) {
+      if(  this.remainderPg > 0 && this.remainderPg !== this.remainingReposNum ) {
         this.remainingReposNum = this.remainingReposNum - this.perPage;
         const respons = await this.getRepos( null, this.paginate( this.remainingReposNum, this.perPage, page ) );
         repos.push( respons );
@@ -72,10 +77,6 @@ export default {
     addRepos() {
       this.getRepos( ( reposList ) => {
         this.repos = reposList[ 0 ];
-        if( !this.numReserved ) {
-          this.remainingReposNum = reposList[ 0 ].length;
-          console.log( this.remainingReposNum );
-        }
       } );
     },
 
