@@ -22,7 +22,6 @@ export default {
       perPage: 100,
       remainingReposNum: 0,
       numReserved: false,
-      remainderPg: this.remainingReposNum % this.perPage 
     }
   },
   components: {
@@ -58,7 +57,8 @@ export default {
       }
 
       // Load more properties if exists (Github API pagination).
-      if(  this.remainderPg > 0 && this.remainderPg !== this.remainingReposNum ) {
+      const remainderPg = this.remainingReposNum % this.perPage;
+      if(  remainderPg > 0 && remainderPg !== this.remainingReposNum ) {
         this.remainingReposNum = this.remainingReposNum - this.perPage;
         const respons = await this.getRepos( null, this.paginate( this.remainingReposNum, this.perPage, page ) );
         repos.push( respons );
